@@ -3,7 +3,8 @@
 ## Nuand bladeRF 2.0 micro
 
 - [bladeRF 2.0 Datasheet](datasheets/bladeRF-micro.pdf)
-- [AD9361](datasheets/AD9361.pdf)
+- [AD9361 Datasheet](datasheets/AD9361.pdf)
+- [AD9361 Reference Manual](datasheets/AD9361_Reference_Manual_UG-570.pdf)
 
 ## Test & Measurement
 
