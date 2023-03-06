@@ -75,4 +75,36 @@ the bladeRF SDR in MATLAB/Simulink.
 
 ## Personal Computer Installation
 
-Coming soon...
+The following details how to install these environments supporting GNU Radio on
+your personal computer.
+
+> **Important Note:** Please be advised installation on a personal computer is
+> optional and you install at your own risk!
+
+### Ubuntu Virtual Machine
+
+The Ubuntu VM used in workshop can be run on your personal computer by
+installing VirtualBox. VirtualBox is a free and open-source virtualization tool
+supported on Windows, macOS, and Linux. To set up your computer to run the
+ELEN90089 Ubuntu VM:
+
+1. Download and install the latest version of
+[VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+2. To use the SDR hardware (bladeRF 2.0 or USRP B210) with your personal
+computer, add USB 3.0 support by installing the
+[VirtualBox Extensions Pack](https://www.virtualbox.org/wiki/Downloads)
+3. Download the ELEN90089 environment files (Ver 1 - uploaded 14 March 2022):  
+[ELEN90089_2022_v1.vbox](https://unimelbcloud-my.sharepoint.com/:u:/g/personal/glenn_bradford_unimelb_edu_au/EdZfneSiW8tHiboOG1E4rq4BLrdxKUGhlQ3boN3oZ6kV8g?e=KWZjtw) (5 KB)  
+[ELEN90089_2022_v1.vdi](https://unimelbcloud-my.sharepoint.com/:u:/g/personal/glenn_bradford_unimelb_edu_au/EQB2vy1b64dOpvrXPeWFTlcBNsieNCecGxGDG9PjO6NitQ?e=7nl54g) (18.6 GB)  
+4. Doubleclick on the `.vbox` configuration file to import the VM into
+VirtualBox.
+
+> **Note:** The `.vdi` file is large (18.6 GB!!!). Make sure you are on a good,
+> unmetered internet connection before downloading.
+
+The `.vbox` configuration file provided has system settings based on the FEIT
+lab computers. You will need to adjust these to reasonable values for you
+personal computer before using.
+
+* *VirtualBox > Settings > System > Motherboards > Base Memory*
+* *VirtualBox > Settings > System > Processor > Processor(s)*

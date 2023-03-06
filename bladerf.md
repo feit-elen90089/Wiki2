@@ -7,11 +7,8 @@ by Nuand, LLC. It will be the main SDR used for the CDC design project.
 
 1. [Overview](#overview)  
 2. [Command Line Interface](#command-line-interface)  
-3. [SoapySDR Block](#soapysdr-block)
-   - [Block Configuration](#block-configuration)  
-   - [Message Port Interface](#message-port-interface)  
-   - [Stream Tag Interface](#stream-tag-interface)  
-4. [libbladeRF](#libbladerf)
+3. [libbladeRF](#libbladerf)
+4. [SoapySDR](#soapysdr)
 5. [Performance](#performance)
 
 ## Overview
@@ -118,16 +115,87 @@ bladeRF> info
 
 See `bladeRF --help` for a full list of possible commands.
 
-## SoapySDR Block
-
-TODO
-
 ## libbladeRF
 
-The bladeRF device can be controlled directly from Python and C/C++ programs
-using the libbladeRF library.
+Device drivers for configuring and streaming samples to and from the bladeRF
+are provided by libbladeRF. Library functions can be incorporated directly into
+C/C++ code or called from Python using the associated language bindings.
+
+See the following documentation for more details.
 
 - [libbladeRF documentation](https://nuand.com/bladeRF-doc/libbladeRF/v2.2.1/)
+
+## SoapySDR Block
+
+[SoapySDR](https://github.com/pothosware/SoapySDR/wiki) is a vendor neutral and
+platform independent library that provides generic APIs to interface with
+various SDR hardware. Within GNU Radio, we will be using the
+*SoapySDR BladeRF Sink* and *SoapySDR BladeRF Source* blocks to configure and
+stream samples to and from the bladeRF device, respectively.
+
+<div align="center">
+
+<img src="images/bladerf_sink.png" width="200" height="80">
+<img src="images/bladerf_source.png" width="200" height="70">
+
+</div>
+
+<br>
+The following parameters are configurable through the GRC interface.
+
+<div align="center">
+
+| Parameter         | Description |
+| ----------------- | ----------- |
+| Output/Input Type | Data type of samples consumed or produced by this block. The default type is a pair of 32-bit floating point numbers representing each complex IQ sample. The individual I and Q components are expected to be in the range -1.0 to +1.0. |
+| Device arguments | Device specific arguments can be passed to libbladeRF through the SoapySDR API. See the table below for a list of possible arguments. |
+| Sample rate      | The number of samples per second consumed or produced by this block and thus the front-end DAC or ADC rate. |
+| Bandwidth        | Bandwidth of the RF Front-end analog filters. Typically this should be set equal to or smaller than the sample rate to reduce aliasing. Setting this value to `0.0` will automatically configure the bandwidth based on the sample rate but note this bandwidth will not be automatically updated if you change the sample rate during flowgraph execution. |
+| Center Freq      | The center frequency to which the RF chain is tuned. |
+| Freq Correction  | Optional offset term to correct for possible frequency offset of the device. |
+| RF Gain          | Overall RF gain of the device. <br>*Tx range:* [17, 73] dB <br>*Rx range:* [-1, 60] dB |
+
+</div>
+
+The parameters of the SoapySDR blocks can be updated during flowgraph execution
+by using GRC variables and QT GUI control blocks, etc. It is also possible to
+change the parameters by issuing commands to the `cmd` port of each block. This
+ports is intended to simplify the control of the bladeRF from other blocks
+within the flowgraph by relying on GNU Radio's
+[message passing interface](gnuradio#message-passing).
+
+A group of commands can be passed to a bladeRF block's *command* port as a GNU
+Radio message, where the message *MUST* be a
+[PMT dictionary](gnuradio#polymorphic-types-pmt).
+The SoapySDR block will interpret each key in the dictionary as the parameter to
+set with the corresponding value. An example of creating such a command message
+in Python is shown below.
+
+```python
+# create PMT dict of bladeRF commands - set frequency and gain of channel 0
+cmd = pmt.make_dict()
+cmd = pmt.dict_add(cmd, pmt.intern("chan"), pmt.from_long(0))
+cmd = pmt.dict_add(cmd, pmt.intern("freq"), pmt.from_double(2.45e9))
+cmd = pmt.dict_add(cmd, pmt.intern("gain"), pmt.from_double(30))
+```
+
+The following table is a list of key commands currently supported on this
+interface.
+
+<div align="center">
+
+| Command     | Type   | Description                                         |
+| ----------- | ------ | --------------------------------------------------- |
+| `chan`      | int    | Specify which channel commands apply to (0).        |
+| `gain`      | double | Set Tx or Rx RF gain.                               |
+| `gain_mode` | bool   | Enable or disable Rx automatic gain control (AGC).  |
+| `freq`      | double | Set Tx or Rx centre frequency.                      |
+| `rate`      | double | Set Tx or Rx sample rate.                           |
+| `bandwidth` | double | Set Tx or Rx bandwidth - 0 for default bandwidth.   |
+
+</div>
+
+**TODO:** Add list device specific arguments - streaming buffer configuration
 
 ## Performance
 
