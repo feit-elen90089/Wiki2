@@ -44,7 +44,7 @@ only in the size of the onboard FPGA.
 
 > **Important Note:** To avoid violating governmental regulations and damaging
 > the hardware, please acknowledge and adhere to the following guidelines:
-> - Never transmit or receive on any band on which you are not licensed to
+> - Never transmit or receive on any band on which you are not licensed to
 > operate
 > - Always terminate TX and RX ports with a 50 Ohm load (either an antenna or SMA
 > terminator)
@@ -135,8 +135,8 @@ stream samples to and from the bladeRF device, respectively.
 
 <div align="center">
 
-<img src="images/bladerf_sink.png" width="200" height="80">
-<img src="images/bladerf_source.png" width="200" height="70">
+<img src="images/bladeRF_sink.png" width="200" height="80">
+<img src="images/bladeRF_source.png" width="200" height="70">
 
 </div>
 
