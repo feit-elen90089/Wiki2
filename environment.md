@@ -12,7 +12,9 @@ issues.
 1. [FEIT GPU Desktop](#feit-gpu-desktop)
     - [Ubuntu VM](#ubuntu-vm)
     - [MATLAB/Simulink](#matlab-simulink)
-2. [Personal Computer Installation](#personal-computer-installation)
+2. [Personal Computer](#personal-computer)
+    - [VirtualBox](#virtualbox)
+    - [Ubuntu](#ubuntu)
 
 ## FEIT GPU Desktop
 
@@ -73,7 +75,7 @@ the bladeRF SDR in MATLAB/Simulink.
 
 - [Communications Toolbox Support Package for BladeRF 2.0](https://www.mathworks.com/matlabcentral/fileexchange/74591-communications-toolbox-support-package-for-bladerf-2-0)
 
-## Personal Computer Installation
+## Personal Computer
 
 The following details how to install these environments supporting GNU Radio on
 your personal computer.
@@ -81,7 +83,7 @@ your personal computer.
 > **Important Note:** Please be advised installation on a personal computer is
 > optional and you install at your own risk!
 
-### Ubuntu Virtual Machine
+### VirtualBox
 
 The Ubuntu VM used in workshop can be run on your personal computer by
 installing VirtualBox. VirtualBox is a free and open-source virtualization tool
@@ -108,3 +110,19 @@ personal computer before using.
 
 * *VirtualBox > Settings > System > Motherboards > Base Memory*
 * *VirtualBox > Settings > System > Processor > Processor(s)*
+
+### Ubuntu
+
+If you are running Ubuntu natively on your personal computer, packages for
+bladeRF and GNU Radio are available in the standard Ubuntu repositories. First
+install the bladeRF device drivers, firmware image, and FPGA image.
+
+```
+$ sudo apt install bladerf bladerf-firmware-fx3 bladerf-fpga-hostedxa9
+```
+
+Then install the GNU Radio development package.
+
+```
+$ sudo apt install gnuradio-dev
+```
