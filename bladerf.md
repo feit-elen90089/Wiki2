@@ -35,7 +35,7 @@ only in the size of the onboard FPGA.
 <div align="center">
 
 | Version | Logic Elements |
-| ------- | :------------: |
+| :-----: | :------------: |
 |   xA4   |       49k      |
 |   xA5   |       77k      |
 |   xA9   |      301k      |
@@ -143,19 +143,15 @@ stream samples to and from the bladeRF device, respectively.
 <br>
 The following parameters are configurable through the GRC interface.
 
-<div align="center">
-
 | Parameter         | Description |
 | ----------------- | ----------- |
 | Output/Input Type | Data type of samples consumed or produced by this block. The default type is a pair of 32-bit floating point numbers representing each complex IQ sample. The individual I and Q components are expected to be in the range -1.0 to +1.0. |
 | Device arguments | Device specific arguments can be passed to libbladeRF through the SoapySDR API. See the table below for a list of possible arguments. |
-| Sample rate      | The number of samples per second consumed or produced by this block and thus the front-end DAC or ADC rate. |
-| Bandwidth        | Bandwidth of the RF Front-end analog filters. Typically this should be set equal to or smaller than the sample rate to reduce aliasing. Setting this value to `0.0` will automatically configure the bandwidth based on the sample rate but note this bandwidth will not be automatically updated if you change the sample rate during flowgraph execution. |
-| Center Freq      | The center frequency to which the RF chain is tuned. |
+| Sample rate      | The number of samples per second consumed or produced by this block and thus the front-end DAC or ADC rate. <br>**Range:** [521k, 61.44M] Samples/sec |
+| Bandwidth        | Bandwidth of the RF Front-end analog filters. Typically this should be set equal to or smaller than the sample rate to reduce aliasing. Setting this value to `0.0` will automatically configure the bandwidth based on the sample rate but note this bandwidth will not be automatically updated if you change the sample rate during flowgraph execution. <br>**Range:** [200k, 56M] Hz |
+| Center Freq      | The center frequency to which the RF chain is tuned. <br>**Range:** [70M, 6G] Hz |
 | Freq Correction  | Optional offset term to correct for possible frequency offset of the device. |
-| RF Gain          | Overall RF gain of the device. <br>*Tx range:* [17, 73] dB <br>*Rx range:* [-1, 60] dB |
-
-</div>
+| RF Gain          | Overall RF gain of the device. <br>**Tx range:** [-23.75, 66] dB <br>**Rx range:** [-15, 60] dB |
 
 The parameters of the SoapySDR blocks can be updated during flowgraph execution
 by using GRC variables and QT GUI control blocks, etc. It is also possible to
@@ -182,8 +178,6 @@ cmd = pmt.dict_add(cmd, pmt.intern("gain"), pmt.from_double(30))
 The following table is a list of key commands currently supported on this
 interface.
 
-<div align="center">
-
 | Command     | Type   | Description                                         |
 | ----------- | ------ | --------------------------------------------------- |
 | `chan`      | int    | Specify which channel commands apply to (0).        |
@@ -192,8 +186,6 @@ interface.
 | `freq`      | double | Set Tx or Rx centre frequency.                      |
 | `rate`      | double | Set Tx or Rx sample rate.                           |
 | `bandwidth` | double | Set Tx or Rx bandwidth - 0 for default bandwidth.   |
-
-</div>
 
 **TODO:** Add list device specific arguments - streaming buffer configuration
 
