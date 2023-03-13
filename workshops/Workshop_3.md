@@ -26,15 +26,15 @@ symbols taken from some constellation, e.g., BPSK, QPSK, or 16QAM.
 rate. We must oversample our signal when using a pulse shape with excess
 bandwidth. Why?
 * *Pulse-shaping filter* – filters our upsampled symbol sequence to ensure
-the signal is bandlimited. We often use filter coefficients, g[k], defined by
+the signal is bandlimited. We often use filter coefficients, $g[k]$, defined by
 a Root Raised Cosine (RRC) pulse with a configurable excess bandwidth
 parameter.
 * *Digital-to-analog converter (D/A)* – converts baseband digital waveform
-(discrete-valued, discrete-time) to a baseband analog waveform (continuous-
-valued, continuous-time).
+(discrete-valued, discrete-time) to a baseband analog waveform 
+(continuous-valued, continuous-time).
 * *Upconversion* – applies quadrature modulation to shift our complex signal
 directly from baseband (centred about 0 Hz) to passband (centred about our
-carrier frequency f_c).
+carrier frequency $f_c$).
 
 <div align="center">
 
@@ -43,36 +43,36 @@ carrier frequency f_c).
 </div>
 
 Implement the GRC flowgraph as depicted above. It should be clear what variables
-should be used to configure the various blocks, but make sure you define the
+to used in configuring the various blocks but make sure you define the
 sample rate variable *samp_rate* as a function of the symbol rate and the
-number of samples per symbol, i.e.,`symb_rate = samp_rate * sps`.
+number of samples per symbol, i.e.,`symb_rate = samp_rate * sps`. Note the 
+scaling factor applied at the output of *Constellation Modulator*. This
+is to normalize the QPSK constellation to unit energy as points in the 
+constellation are at $(\pm \sqrt{2} \pm j\sqrt{2})$.
 
-Note the
-scaling by a factor of tw
-
-> **FLUX Questions:**
+> **FLUX Questions:**  
 > 1. Run your flowgraph and try a few different values for the
 >    samples-per-symbol (*sps*) and the excess bandwith (*excess_bw*)
 >    parameters. How does the output spectrum change?
->    <br>**Note:** The *Constellation Modulator* parameters cannot be
->    updated during runtime.
+>    <br>**Note:** The *Constellation Modulator* parameters CANNOT be
+>    updated while running the flowgraph.  
 > 2. Increase the symbol rate to 500 kSymb/s and then rerun your flowgraph.
->    Does the change in output spectrum align with your expectations?
+>    Does the change in output spectrum align with your expectations?  
 
 ## 3.2 Manual Symbol Synchronization
 
 You will now focus only on recovering the symbol timing of the transmitted
 waveform. We will add a symbol timing recovery subsystem that takes as input
-the output of the received matched filter and outputs a sample at the best
-sample offset before downsampling.
+the output of the received matched filter and outputs the sample closest to
+the optimal sampling time. 
 
 <div align="center">
 
-![Manual Timing Synchronization](images/w3_manual_block.png)
+![Manual Timing Synchronization](images/w3_2_manual_block.png)
 
 </div>
 
-To begin, you will manually select the ideal sampling offset, k, based on
+To begin, you will manually select the best sampling offset, $\hat{k}$, based on
 visual observation.
 
 <div align="center">
@@ -103,12 +103,12 @@ below for your convenience.
 | alpha         | `excess_bw` |
 | Num Taps      |   `11*sps`  |
 
-> **FLUX Questions:**
+> **FLUX Questions:**  
 > 3. Run your flowgraph and observe the constellation on the *QT GUI
 >    Constellation Sink*. How does the constellation change as you adjust the
->    delay?
+>    delay?  
 > 4. Increase the oversampling rate by trying values of 4 and 8 for *sps*. How
->    does the oversampling rate affect the constellation at different delays?
+>    does the oversampling rate affect the constellation at different delays?  
 
 Before automating the symbol timing recovery process, we would first like to
 determine a metric to quantify the deviation of the received constellation from
@@ -122,7 +122,7 @@ compensation.
 
 <div align="center">
 
-![Example error vector of QPSK symbol](images/w3_error_vector.png)
+<img src="images/w3_2_error_vector.png" width="350" height="350">
 
 </div>
 
@@ -145,22 +145,22 @@ computing the EVM that we can include in our flowgraphs.
 
 <div align="center">
 
-![EVM flowgraph](images/w3_2b_flowgraph.png)
+<img src="images/w3_2b_flowgraph.png" width="350" height="200">
 
 </div>
 
 Add the *EVM Measurement* block to your flowgraph to measure the
 EVM of your received constellation, connecting the output to a *QT GUI
-Numeric Sink*. Note that EVM is expressed as a percentage and thus falls
+Number Sink*. Note that EVM is expressed as a percentage and thus falls
 between 0 and 100.
-<br>**Hint:** You can add exponential averaging to *QT GUI Numeric Sink* by
+<br>**Hint:** You can add exponential averaging to *QT GUI Number Sink* by
 entering an average parameter value between 0.0 and 1.0.
 
-> **FLUX Questions:**
+> **FLUX Questions:**  
 > 5. How does the EVM vary as you change the delay value of your manual timing
->    recovery system?
+>    recovery system?  
 > 6. How does the EVM change if you first increase the oversampling factor sps
->    and then vary the delay parameter?
+>    and then vary the delay parameter?  
 
 ## 3.3 Timing Recovery Loop
 
@@ -169,7 +169,7 @@ You will now replace your manual symbol timing correction with GNU Radio's
 composed of a timing error detector (TED), proportional-integral (PI) loop
 filter, and sample interpolator. There are multiple options for both the TED
 and interpolating filter. For this workshop you will use the Early Late TED
-(ELTED).
+(ELTED) and 8-tap MMSE interpolator.
 
 <div align="center">
 
@@ -177,29 +177,30 @@ and interpolating filter. For this workshop you will use the Early Late TED
 
 </div>
 
-Contruct the GNU Radio flowgraph as depicted above. Note that we have included
+Construct the GNU Radio flowgraph as depicted above. Note that we have included
 a *Channel Model* block to create a sample clock offset between the transmit
-and receive chains. If the input sampling rate to *Channel Model* is `F_in`,
-then the output sampling rate will be `F_out = epsilon*F_in`.
+and receive chains. If the sampling rate of the input to *Channel Model* is 
+$F_{in}$, then sample rate of the output will be at 
+$F_\text{out} = \epsilon \cdot F_\text{in}$.
 
-> **Flux Questions:**
-> 7. What EVM do you measure after symbol synchronization?
-> 8. Try different values of $epsilon* in the *Channel Model* block. At what
->    epsilon block does your symbol synchronizer no longer work?
+> **FLUX Questions:**  
+> 7. What EVM do you measure after symbol synchronization?  
+> 8. Try different values of $epsilon$ in the *Channel Model* block. At what
+>    $epsilon$ does your symbol synchronizer no longer work?  
 
 ## 3.4 RF Loopback
 
 Now that we have investigated symbol timing recovery in simulation, let's move
-on to see if our system works with our real-world hardware! We will create an
-RF loopback by physically connecting the output of the *TX1* port to the *RX1*
+on to see if our system works with our real-world hardware! Create an RF 
+loopback by physically connecting the output of the *TX1* port to the *RX1*
 port **with a 30 dB attenuator inline**. A friendly reminder that...
 
 > **Important Note:** To avoid violating governmental regulations and damaging
-> the hardware, please always adhere to the following guidelines.
+> the hardware, please adhere to the following guidelines.
 > 1. Never transmit or receive on any band on which you are not licensed to
 >    operate.
-> 2. Always terminate TX and RX ports with a 50 Ohm load (either an antenna or
->    SMA terminator).
+> 2. Always terminate TX and RX ports with a 50 Ohm load - either an antenna or
+>    SMA terminator.
 > 3. Never connect a TX port directly to an RX port without proper attenuation
 >    of at least 30 dB.
 
@@ -213,20 +214,20 @@ We will use the following flowgraph to create our RF loopback experiment.
 
 Implement the RF loopback flowgraph as depicted in the figure above. There are
 a few important things to note when creating this flowgraph. First, the bladeRF
-expects sample values between (-1.0, 1.0) and thus we have provide additional
+expects sample values in the range (-1.0, 1.0) and thus we have provide additional
 scaling in *Multiply Const* block after *Constellation Modulator*. Second, in
 future workshops we will address the issue of channel estimation and carrier
-offset correction. Because we do not have these systems present, the received
+offset correction. Because we do not have these subsystems present, the received
 constellation has a fixed amplitude scaling and random phase shift relative to
-the constellation locations. You will manually correct for these by observing
+the ideal constellation points. You will manually correct for these by observing
 the output constellation. Update the *Multiply Const* block such that
 *Constant* is `amplitude * np.exp(1j*phase)`. This expression uses the Numpy
-Python package which must be included in the *Import* block as follows:
+Python package which must be included in an *Import* block as follows:
 `import numpy as np`.
 
-> **FLUX Question:**
+> **FLUX Question:**  
 > 1.Run your flowgraph and observe the received signal constellation. Adjust
 > the *amplitude* and *phase* scaling variables to align the received symbol
 > constellation with the transmitted constellation. This should minimize the
-> EVM. What EVM do you measure for after symbol synchronization in your RF
+> EVM. What EVM do you measure after symbol synchronization in your RF
 > loopback?
