@@ -13,3 +13,7 @@
 [Measurements](measurements)  
 [Debugging](debugging)  
 [Datasheets](datasheets)
+
+---
+
+[Workshop 3](workshops/Workshop_3)
