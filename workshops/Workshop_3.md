@@ -45,7 +45,7 @@ carrier frequency $f_c$).
 Implement the GRC flowgraph as depicted above. It should be clear what variables
 to used in configuring the various blocks but make sure you define the
 sample rate variable *samp_rate* as a function of the symbol rate and the
-number of samples per symbol, i.e.,`symb_rate = samp_rate * sps`. Note the 
+number of samples per symbol, i.e.,`samp_rate = symb_rate * sps`. Note the 
 scaling factor applied at the output of *Constellation Modulator*. This
 is to normalize the QPSK constellation to unit energy as points in the 
 constellation are at $(\pm \sqrt{2} \pm j\sqrt{2})$.
