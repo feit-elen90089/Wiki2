@@ -134,6 +134,6 @@ is an impact on the measured EVM. At what loop bandwidth is the loop no longer
 able to acquire an initial frequency lock?
 
 > **FLUX Question:**  
-> 5. What EVM do you measure for your choice of loop bandwidth?
+> 5. What EVM do you measure for your choice of loop bandwidth?  
 > 6. At what loop bandwidth value can you no longer acquire an initial
 >    frequency lock?
