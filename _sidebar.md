@@ -16,4 +16,5 @@
 
 ---
 
-[Workshop 3](workshops/Workshop_3)
+[Workshop 3](workshops/Workshop_3)  
+[Workshop 4](workshops/Workshop_4)

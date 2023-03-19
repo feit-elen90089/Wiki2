@@ -30,7 +30,7 @@ the signal is bandlimited. We often use filter coefficients, $g[k]$, defined by
 a Root Raised Cosine (RRC) pulse with a configurable excess bandwidth
 parameter.
 * *Digital-to-analog converter (D/A)* – converts baseband digital waveform
-(discrete-valued, discrete-time) to a baseband analog waveform 
+(discrete-valued, discrete-time) to a baseband analog waveform
 (continuous-valued, continuous-time).
 * *Upconversion* – applies quadrature modulation to shift our complex signal
 directly from baseband (centred about 0 Hz) to passband (centred about our
@@ -45,9 +45,9 @@ carrier frequency $f_c$).
 Implement the GRC flowgraph as depicted above. It should be clear what variables
 to used in configuring the various blocks but make sure you define the
 sample rate variable *samp_rate* as a function of the symbol rate and the
-number of samples per symbol, i.e.,`samp_rate = symb_rate * sps`. Note the 
+number of samples per symbol, i.e.,`samp_rate = symb_rate * sps`. Note the
 scaling factor applied at the output of *Constellation Modulator*. This
-is to normalize the QPSK constellation to unit energy as points in the 
+is to normalize the QPSK constellation to unit energy as points in the
 constellation are at $(\pm \sqrt{2} \pm j\sqrt{2})$.
 
 > **FLUX Questions:**  
@@ -64,7 +64,7 @@ constellation are at $(\pm \sqrt{2} \pm j\sqrt{2})$.
 You will now focus only on recovering the symbol timing of the transmitted
 waveform. We will add a symbol timing recovery subsystem that takes as input
 the output of the received matched filter and outputs the sample closest to
-the optimal sampling time. 
+the optimal sampling time.
 
 <div align="center">
 
@@ -179,8 +179,8 @@ and interpolating filter. For this workshop you will use the Early Late TED
 
 Construct the GNU Radio flowgraph as depicted above. Note that we have included
 a *Channel Model* block to create a sample clock offset between the transmit
-and receive chains. If the sampling rate of the input to *Channel Model* is 
-$F_{in}$, then sample rate of the output will be at 
+and receive chains. If the sampling rate of the input to *Channel Model* is
+$F_{in}$, then sample rate of the output will be at
 $F_\text{out} = \epsilon \cdot F_\text{in}$.
 
 > **FLUX Questions:**  
@@ -191,7 +191,7 @@ $F_\text{out} = \epsilon \cdot F_\text{in}$.
 ## 3.4 RF Loopback
 
 Now that we have investigated symbol timing recovery in simulation, let's move
-on to see if our system works with our real-world hardware! Create an RF 
+on to see if our system works with our real-world hardware! Create an RF
 loopback by physically connecting the output of the *TX1* port to the *RX1*
 port **with a 30 dB attenuator inline**. A friendly reminder that...
 
@@ -226,8 +226,8 @@ Python package which must be included in an *Import* block as follows:
 `import numpy as np`.
 
 > **FLUX Question:**  
-> 1.Run your flowgraph and observe the received signal constellation. Adjust
-> the *amplitude* and *phase* scaling variables to align the received symbol
-> constellation with the transmitted constellation. This should minimize the
-> EVM. What EVM do you measure after symbol synchronization in your RF
-> loopback?
+> 9. Run your flowgraph and observe the received signal constellation. Adjust
+>    the *amplitude* and *phase* scaling variables to align the received symbol
+>    constellation with the transmitted constellation. This should minimize the
+>    EVM. What EVM do you measure after symbol synchronization in your RF
+>    loopback?
