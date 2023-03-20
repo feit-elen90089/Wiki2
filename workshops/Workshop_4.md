@@ -306,8 +306,8 @@ length to tag the output stream with a corresponding `packet_len` tag.
 
 Run your GNU Radio flowgraph.
 
-> **FLUX Question:**
-> 8. Is your receiver able to successfully detect packets?
+> **FLUX Question:**  
+> 8. Is your receiver able to successfully detect packets?  
 > 9. How will the length of the preamble sequence impact the reliability of
 >    of its detection?
 
