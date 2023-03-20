@@ -4,7 +4,7 @@ This workshop guide includes activities for lecture and workshop sessions of
 week 4. Please refer to the following overview slides as needed.
 
 - [Lecture 04 - Carrier Synchronization](https://canvas.lms.unimelb.edu.au/courses/151467/pages/lecture-04-carrier-synchronization?module_item_id=4520651)
-- Workshop 04 - TBD
+- [Workshop 04 - Packet Communication](https://canvas.lms.unimelb.edu.au/courses/151467/pages/workshop-04-packet-communications?module_item_id=4520656)
 
 ## 4.1: Carrier Frequency Offset
 
@@ -137,3 +137,181 @@ able to acquire an initial frequency lock?
 > 5. What EVM do you measure for your choice of loop bandwidth?  
 > 6. At what loop bandwidth value can you no longer acquire an initial
 >    frequency lock?
+
+## 4.3 Packet Communications
+
+In addition to correcting symbol timing and carrier frequency offsets, a
+digital receiver must synchronize to the incoming stream of data symbols. In
+the case of a continuous stream of transmitted symbols, this is because the
+receiver will not start operating at the exact time the transmitter begins its
+transmission. In the case of bursty communications, in which transmissions are
+discontinuous, the receiver will not know a priori when or even if the
+transmitter will send data.
+
+The solution is to group data symbols into delimited *packets* or *frames* and
+insert a known sequence of symbols within each packet for which the receiver
+can search. This known symbol sequence is alternatively called a preamble, an
+access code, a pilot sequence, or a training sequence. Often the preamble is
+grouped together with other control information into a packet *header* which
+can inform the digital receiver about the format of the data packet, e.g.,
+the modulation employed or the number of data bytes in the packet (the length
+of the packet *payload*).
+
+```
+------------------------------------------
+|  Header  |           Payload           |
+------------------------------------------
+```
+
+### Protocol Formatter
+
+Within GNU Radio, we can use the *Protocol Formatter* block to generate a
+packet header with a configurable format. We will first examine the process of
+inserting a packet header into a stream of data symbols in GNU Radio before
+moving on to the process of packet or frame recovery at the receiver. Create
+the GNU Radio flowgraph depicted in the figure below.
+
+<div align="center">
+
+![Default header flowgraph](images/w4_3a_flowgraph.png)
+
+</div>
+
+There are two variables to highlight in this flowgraph. The first is *preamble*,
+which specifies the bit sequence we will insert to delimit the beginning of a
+packet. In this example we will set the preamble to be the default preamble in
+GNU Radio,
+
+- *preamble*: `digital.packet_utils.default_access_code`
+
+This preamble is a 64-bit sequence represented by the hexadecimal string
+`\xac\xdd\xa4\xe2\xf2\x8c\x20\xfc`. The next key variable is *header_format*,
+which is the object used to actually generate the header. For this example we
+will create an object of the default GNU Radio header class.
+
+- *header_format*: `digital.header_format_default(preamble, threshold, bps)`
+
+The default header format is composed of a variable length access code (in our
+case 64 bits) followed by two 16-bit fields which repeat the length of the
+current packet payload in bytes. Overall, this gives us a 12-byte header with
+the following 32-bit word arrangement.
+
+```
+| Word  | 32    -    16 | 15    -     0 |
+| ----- | ------------- | ------------- |
+|   0   |          Access Code          |
+|   1   |          Access Code          |
+|   2   | Packet Length | Packet Length |
+```
+
+This example also employs another important GNU Radio tool, the *Stream Tag*.
+Stream tags are used to attach control information to specific samples in a
+data stream, where each tag is a *key-value* pair that can be observed by all
+downstream blocks. As stream tags are a useful way for GNU Radio blocks to
+communicate with one another, it is worth spending some time reviewing the GNU
+Radio tutorial on the topic.
+
+- [Stream Tags](https://wiki.gnuradio.org/index.php?title=Stream_Tags)
+
+Within our flowgraph, the following blocks use stream tags for their operation.
+
+- *Stream to Tagged Stream*: - Attaches the tag `packet_len: 64` to every 64th
+byte in our stream. This effectively packetizes our data into packets with a
+payload size of 64 bytes.
+- *Protocol Formatter*: Looks for `packet_len` tags on its input port to
+determine how long each packet is. Creates a packet header based on the
+formatter provided for each packet tag it encounters. Note the header output
+will also be tagged with `packet_len: 12` as our header is 12 bytes long.
+- *Tagged Stream MUX*: Multiplexes two tagged streams on its input ports, where
+the number of consecutive samples taken from each port is determined by the
+`packet_len` tag encountered on each port.
+
+We can also use stream tags within our *QT GUI Time Sink* to trigger when the
+data is plotted. This can be helpful to align the plotted data to a known
+starting point. For this example set the following parameters in the the
+*QT GUI Time Sink* block to plot one packet at a time.
+
+| Parameter        |     Value      |
+| ---------------- | :------------: |
+| *General*        |                |
+| Y_max:           |     `256`      |
+| Number of Points |     `76`       |
+| *Trigger*        |                |
+| Trigger Mode     |     `Tag`      |
+| Tigger Tag Key   | `"packet_len"` |
+
+Run your GNU Radio flowgrpah.
+
+> **FLUX Question:**  
+> 7. How many of the initial bytes in each packet are the same? Can you explain
+>    this?
+
+### Preamble Detection
+
+To achieve frame synchronization, the receiver can search for the inserted
+preamble in its received data. GNU Radio supports searching for the preamble
+either within the received symbol stream or the demodulated bit stream. For the
+latter case, we can use the *Correlated Access Code - Tagged Stream* block.
+
+Add the packet header generating blocks to your Costas Loop RF loopback
+flowgraph with the. Include receiver blocks for demodulating the received
+symbols and searching for the preamble as depicted in the figure below. A few
+notes for this flowgraph.
+
+- For simplicity, you can use a single BladeRF device in RF loopback rather
+  than two devices.
+- Change the modulation format from QPSK to BPSK.
+- Set the *Constellation Modulator* to use differential encoding as we need to
+  remove the remaining phase ambiguity in the received constellation.
+
+<div align="center">
+
+![Preamble correlation flowgraph](images/w4_3b_flowgraph.png)
+
+</div>
+
+We have added a number of blocks to our flowgraph to map from the received
+symbols to packets of payload bytes. These new blocks perform the following
+functionality.
+
+- *Constellation Decoder* - Makes a hard decision about each received symbol
+  and maps to the corresponding transmitted bits based on the constellation
+  object provided. Each output byte will have $\log_2(M)$ significant bits,
+  where $M$ is the modulation order.
+- *Differential Decoder* - Reverses the differential encoding applied at the
+   transmitter to counteract phase ambiguity in the received symbol
+   constellation.
+- *Repack Bits* - Packs received bits to bytes with 8 significant bits. For our
+  flowgraph make sure to set the parameters as follows.
+  - *Bits per input byte*: `constel_obj.bits_per_symbol()`
+  - *Alignment*: `Output`
+  - *Endianness*: `MSB`
+
+The *Correlate Access Code - Tagged Stream* block is what actually searches for
+our preamble in the stream of received bits. It does so by correlating the
+received bit sequence, $b[k]$, with the bits of the preamble, $p[k]$. At each
+sample time $k$ it checks how many the next 64 bits differ from corresponding
+bits in the preamble, i.e., it computes the following metric,
+
+```math
+\sum_{i=0}^{N_\text{preamble} - 1} b[k + i] \oplus p[i]
+```
+
+This is the *Hamming distance* between the preamble and the received bits. If
+the number of bit differences is below the configured *threshold*, then the
+block will declare the preamble found. It discards the 64 bits of the
+preamble and then inspects the next 32-bits that contain the packet length
+repeated twice. If the two packet length fields match, the block uses this
+length to tag the output stream with a corresponding `packet_len` tag.
+
+Run your GNU Radio flowgraph.
+
+> **FLUX Question:**
+> 8. Is your receiver able to successfully detect packets?
+> 9. How will the length of the preamble sequence impact the reliability of
+>    of its detection?
+
+Additional details on the use of packet-based communication in GNU Radio can be
+found in the following tutorial.
+
+- [Packet Communications](https://wiki.gnuradio.org/index.php?title=Packet_Communications)
