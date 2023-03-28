@@ -45,7 +45,7 @@ packetized data transfer.
 > [Packet Communications Tutorial](https://wiki.gnuradio.org/index.php?title=Packet_Communications)
 > as it covers similar concepts but with a slightly different setup.
 > 4. Experiment with GNU Radio’s packet example. Code for the example can be
-> found on the Ubuntu VM at the following location: `/use/share/gnuradio/examples/digital/packet`.
+> found on the Ubuntu VM at the following location: `/usr/share/gnuradio/examples/digital/packet`.
 > You should make a local copy of the following GRC flowgraphs.
 >
 >   - `packet_loopback_hier.grc`
