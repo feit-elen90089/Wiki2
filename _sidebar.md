@@ -10,6 +10,7 @@
 [Software Basics](sw_basics)  
 [Nuand bladeRF](bladerf)  
 [GNU Radio](gnuradio)  
+[CDC Link](cdc_link)  
 [Measurements](measurements)  
 [Debugging](debugging)  
 [Datasheets](datasheets)
