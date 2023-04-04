@@ -9,7 +9,8 @@ by Nuand, LLC. It will be the main SDR used for the CDC design project.
 2. [Command Line Interface](#command-line-interface)  
 3. [libbladeRF](#libbladerf)
 4. [SoapySDR](#soapysdr)
-5. [Performance](#performance)
+5. [gr-bladeRF](#gr-bladeRF)
+6. [Performance](#performance)
 
 ## Overview
 
@@ -188,6 +189,123 @@ interface.
 | `bandwidth` | double | Set Tx or Rx bandwidth - 0 for default bandwidth.   |
 
 **TODO:** Add list device specific arguments - streaming buffer configuration
+
+## gr-bladeRF
+
+Nuand releases a GNU Radio OOT module **gr-bladeRF** with blocks that can be
+used to control and stream samples from a bladeRF device. It is now recommended
+to use these blocks as the *SoapySDR* blocks appear to be silently dropping
+samples. The *bladeRF Source* block also allows disabling the receiver AGC,
+making it possible to set a fixed receive gain value. This will likely be
+needed for implementing an energy detector within your secondary transmitter.
+
+### Installation
+
+The **gr-bladeRF** module depends on building and installing two other GNU Radio
+OOT modules first: **gr-iqbal** and **gr-osmosdr**. Because the bladeRF driver
+installed via the Ubuntu repositories is an older version of the library,
+specific versions of these OOT modules must be built and installed for
+everything to work. The required versions of the three modules are as follows.
+
+<div align="center">
+
+| OOT Module     | Branch/Commit |
+| :------------: | :-----------: |
+| **gr-iqbal**   |   `latest`    |
+| **gr-osmosdr** |  `dev-gr-3.9` |
+| **gr-bladeRF** |   `bc73edc`   |
+
+</div>
+
+The first step is to build and install Osomcom's **gr-iqbal** module.
+
+```
+$ git clone git://git.osmocom.org/gr-iqbal
+$ cd gr-iqbal
+$ git submodule update --init --recursive
+$ mkdir build && cd build
+$ cmake ..
+$ make -j$(nproc)
+$ sudo make install && sudo ldconfig
+```
+
+Next, build and install the `dev-gr-3.9` branch of Osmocom's **gr-osmosdr**
+module.
+
+```
+$ sudo apt install libsndfile1-dev # dependency installed from Ubuntu repo
+$ git clone https://github.com/Nuand/gr-osmosdr -b dev-gr-3.9
+$ cd gr-osmosdr
+$ mkdir build && cd build
+$ cmake ..
+$ make -j$(nproc)
+$ sudo make install && sudo ldconfig
+```
+
+Finally, we can build and install Nuand's **gr-bladeRF** module. Make sure to
+checkout out the `bc73edc` commit as this has been verified to work with the
+installed bladeRF library versions.
+
+```
+$ git clone https://github.com/Nuand/gr-bladeRF.git
+$ cd gr-bladeRF
+$ git checkout bc73edc
+$ mkdir build && cd build
+$ cmake ..
+$ make -j($nproc)
+$ sudo make install && sudo ldconfig
+```
+
+The **gr-bladeRF** blocks should now be available in GRC. Note you likely want
+to disable the hardcoded debug printing within **gr-bladeRF** by commenting out
+line 43 in `./gr-bladeRF/lib/bladerf/bladerf_common.h`.
+
+```c++
+43 //#define BLADERF_DEBUG_ENABLE
+```
+
+### GRC Blocks
+
+The bladeRF can be controlled by inserting the *bladeRF Source* and
+*bladeRF Sink* blocks into your GNU Radio flowgraph.
+
+<div align="center">
+
+<img src="images/grbladeRF_sink.png" width="150" height="250">
+<img src="images/grbladeRF_source.png" width="150" height="250">
+
+</div>
+
+These blocks generally have similar parameters to the *SoapySDR* blocks but
+with additional control over the setup of the device. Parameters common to both
+the source and sink blocks are as follows.
+
+| Parameter       | Description |
+| --------------- | ----------- |
+| Device          | Device serial ID. If not set the first device found is used. |
+| Num Channels    | Number of TX/RX channels used. **Please keep at 1**. |
+| Verbosity       | Log message severity level. Recommended to set as *Warning*. |
+| Sample Rate     | IQ sample rate of transmit or receive channels, in samples per second. |
+| Frequency       | Centre or carrier frequency of device of transmit or receive channels, in Hz. |
+| Bandwidth       | Analog bandwidth of RF-frontend, in Hz. Typically set to *Sample Rate* or smaller. |
+| Reference Clock | This parameter must be set but should be ignored by the block. Set to 38400000 to be safe. |
+
+Receive specific parameters for the *bladeRF Source* block are as follows.
+
+
+| Tx Parameter      | Description |
+| ----------------- | ----------- |
+| DC Offset Mode    | Mode of DC offset correction: False (Off), Manual, or Automatic. Recommended to set to Automatic. |
+| IQ Imbalance Mode | Mode of IQ imbalance correction: False (Off), Manual, or Automatic. Recommended to set to Automatic. |
+| AGC               | AGC mode: False (Off) or True (On). |
+| RF Gain           | Receive RF front-end gain setting employed if AGC is disabled, in dB. |
+
+
+Transmit specific parameters for the *bladeRF Sink* block are as follows.
+
+| Rx Parameter    | Description                                 |
+| --------------- | ------------------------------------------- |
+| RF Gain         | Transmit power gain of RF front-end, in dB. |
 
 ## Performance
 
