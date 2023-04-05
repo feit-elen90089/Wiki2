@@ -11,6 +11,7 @@ feel free to suggest corrections and additional topics.
 [Environments](environment)  
 [Software Basics](sw_basics)  
 [Nuand bladeRF](bladerf)  
+[Raspberry Pi](raspberry_pi)  
 [GNU Radio](gnuradio)  
 [CDC Link](cdc_link)  
 [Measurements](measurements)  
