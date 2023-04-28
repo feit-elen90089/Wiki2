@@ -81,13 +81,22 @@ device on the Uni wireless network.
 </div>
 
 To connect to another WiFi network, e.g., at home, you can either join the
-network in *Settings* or run the following command.
+network in *Settings* or run the following command to join a visible network.
 
 ```
 $ sudo nmcli device wifi connect <ssid>
 ```
 
-You should then be prompted for the network's password.
+You should then be prompted for the network's password. If the new WiFi network
+is not visible (either hidden or you need to add the configuration while
+connected to another network), you can add the new connection as follows.
+
+```
+$ ncmli con add type wifi con-name <name> ifname wlan0 ssid <ssid>
+$ nmcli con modify <name> wifi-sec.key-mgmt wpa-psk wifi-sec.psk <password>
+```
+
+The connection name `<name>` can be the same as the SSID.
 
 ## Remote Access
 
